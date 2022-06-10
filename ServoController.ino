@@ -1,17 +1,24 @@
 #include "Arduino.h"
 #include "AX12A.h"
 #include <Wire.h>
+#include "CytronMotorDriver.h"
 
 #define DirectionPin   (2u)
 #define BaudRate      (1000000ul)
-#define ID1        (32u)
-#define ID2        (1u)
-#define ID3        (14u)
+#define ID1        (10u)
+#define ID2        (62u)
+#define ID3        (2u)
+#define ID4        (4u)
+#define ID5        (52u)
+#define ID6        (14u)
+
+// Configure the motor driver.
+CytronMD motor(PWM_DIR, 3, 4);  // PWM = Pin 3, DIR = Pin 4.
 
 //Id's of the servo's 
-int servos[] = {32, 1}; 
+int servos[] = {10, 62, 2, 4, 52, 14}; 
 //Id of the vacuum
-int vacuum = 6;
+int vacuum = 5;
 
 void setup()
 {
@@ -29,7 +36,20 @@ void setup()
   // Call receiveEvent when data received                
   Wire.onReceive(receiveEvent);
 }
-
+//increase speed ad increasing speed
+void turnVaccuumOn() {
+  for (int i = 0; i < 256; i++) { 
+      motor.setSpeed(i);
+      delay(300 - i); 
+    } 
+}
+//decrease speed ad decreasing speed
+void turnVaccuumOff() {
+    for (int i = 0; i < 256; i++) { 
+      motor.setSpeed(-i);
+      delay(300 - i); 
+    }  
+}
 void receiveEvent() {
   // Check if Wire is available and discard first byte
   if(!Wire.available()) return;
@@ -53,22 +73,10 @@ void receiveEvent() {
       // Turn servo to requested angle 
       ax12a.move(servos[id], data);
     }
-  }
+  
 }
  
-void turnVaccuumOn() {
-  digitalWrite(pin, HIGH);
-  digitalWrite(pin, LOW);
 
-  for (int i = 0; i < 256; i++) { 
-    analogWrite(pin, i); 
-    delay(20); 
-    } 
-}
-
-void turnVaccuumOff() {
-  digitalWrite(pin, LOW);
-}
 
 void loop(){
   
