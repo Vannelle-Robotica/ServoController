@@ -10,6 +10,8 @@
 
 //Id's of the servo's 
 int servos[] = {32, 1}; 
+//Id of the vacuum
+int vacuum = 6;
 
 void setup()
 {
@@ -35,16 +37,37 @@ void receiveEvent() {
 
   // Parse id of servo from read wire
   int id = (int)Wire.read() - '0';
-  int data;
-
-  // Parse angle of servo from read wire
-  while (Wire.available()) { 
-    data *= 10;
-    data += (int) Wire.read() - '0';
+  if(id == vacuum){
+    turnVaccuumOn();
+    delay(5000);
+    turnVaccuumOff();
+  } else{
+      int data;
+    
+      // Parse angle of servo from read wire
+      while (Wire.available()) { 
+        data *= 10;
+        data += (int) Wire.read() - '0';
+      }
+      
+      // Turn servo to requested angle 
+      ax12a.move(servos[id], data);
+    }
   }
-  
-  // Turn servo to requested angle 
-  ax12a.move(servos[id], data);
+}
+ 
+void turnVaccuumOn() {
+  digitalWrite(pin, HIGH);
+  digitalWrite(pin, LOW);
+
+  for (int i = 0; i < 256; i++) { 
+    analogWrite(pin, i); 
+    delay(20); 
+    } 
+}
+
+void turnVaccuumOff() {
+  digitalWrite(pin, LOW);
 }
 
 void loop(){
